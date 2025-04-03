@@ -1,0 +1,27 @@
+{
+  "name": "joplin-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Joplin",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test",
+    "test:search": "node test-search.js",
+    "test:read-notebook": "node test-read-notebook.js",
+    "test:read-note": "node test-read-note.js",
+    "test:read-multinote": "node test-read-multinote.js"
+  },
+  "keywords": [
+    "mcp",
+    "joplin"
+  ],
+  "author": "Jakub Frieb <frieb@digitalmind.cz>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}
