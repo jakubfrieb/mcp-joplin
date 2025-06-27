@@ -10,7 +10,21 @@ import logger from './lib/logger.js';
 
 import parseArgs from './lib/parse-args.js';
 import JoplinAPIClient from './lib/joplin-api-client.js';
-import { ListNotebooks, SearchNotes, ReadNotebook, ReadNote, ReadMultiNote } from './lib/tools/index.js';
+import { 
+  ListNotebooks, 
+  SearchNotes, 
+  ReadNotebook, 
+  ReadNote, 
+  ReadMultiNote,
+  CreateNote,
+  UpdateNote,
+  DeleteNote,
+  CreateFolder,
+  UpdateFolder,
+  DeleteFolder,
+  GetAllNotes,
+  GetFolder
+} from './lib/tools/index.js';
 
 // Parse command line arguments
 parseArgs();
@@ -108,6 +122,153 @@ server.tool(
   },
   {
     description: 'Read the full content of multiple notes at once'
+  }
+);
+
+// Register the create_note tool
+server.tool(
+  'create_note',
+  { 
+    title: z.string(),
+    body: z.string().optional(),
+    parent_id: z.string().optional(),
+    is_todo: z.boolean().optional(),
+    todo_due: z.number().optional()
+  },
+  async ({ title, body, parent_id, is_todo, todo_due }) => {
+    const result = await new CreateNote(apiClient).call(title, body, parent_id, is_todo, todo_due);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Create a new note with optional Markdown content, notebook assignment, and todo properties'
+  }
+);
+
+// Register the update_note tool
+server.tool(
+  'update_note',
+  { 
+    note_id: z.string(),
+    title: z.string().optional(),
+    body: z.string().optional(),
+    parent_id: z.string().optional(),
+    is_todo: z.boolean().optional(),
+    todo_completed: z.boolean().optional(),
+    todo_due: z.number().optional()
+  },
+  async ({ note_id, title, body, parent_id, is_todo, todo_completed, todo_due }) => {
+    const result = await new UpdateNote(apiClient).call(note_id, title, body, parent_id, is_todo, todo_completed, todo_due);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Update an existing note\'s title, content, notebook, or todo properties'
+  }
+);
+
+// Register the delete_note tool
+server.tool(
+  'delete_note',
+  { note_id: z.string() },
+  async ({ note_id }) => {
+    const result = await new DeleteNote(apiClient).call(note_id);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Move a note to trash (soft delete). The note can be restored from Joplin\'s trash'
+  }
+);
+
+// Register the create_folder tool
+server.tool(
+  'create_folder',
+  { 
+    title: z.string(),
+    parent_id: z.string().optional()
+  },
+  async ({ title, parent_id }) => {
+    const result = await new CreateFolder(apiClient).call(title, parent_id);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Create a new folder (notebook) with optional parent folder assignment'
+  }
+);
+
+// Register the update_folder tool
+server.tool(
+  'update_folder',
+  { 
+    folder_id: z.string(),
+    title: z.string().optional(),
+    parent_id: z.string().optional()
+  },
+  async ({ folder_id, title, parent_id }) => {
+    const result = await new UpdateFolder(apiClient).call(folder_id, title, parent_id);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Update a folder\'s title or move it to a different parent folder with circular reference prevention'
+  }
+);
+
+// Register the delete_folder tool
+server.tool(
+  'delete_folder',
+  { folder_id: z.string() },
+  async ({ folder_id }) => {
+    const result = await new DeleteFolder(apiClient).call(folder_id);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Move a folder and all its contents to trash (soft delete). Can be restored from Joplin\'s trash'
+  }
+);
+
+// Register the get_all_notes tool
+server.tool(
+  'get_all_notes',
+  { 
+    folder_id: z.string().optional(),
+    page: z.number().optional(),
+    limit: z.number().optional(),
+    order_by: z.string().optional(),
+    order_dir: z.string().optional()
+  },
+  async ({ folder_id, page, limit, order_by, order_dir }) => {
+    const result = await new GetAllNotes(apiClient).call(folder_id, page, limit, order_by, order_dir);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Get all notes with optional folder filtering, pagination, and sorting. Supports todo status display'
+  }
+);
+
+// Register the get_folder tool
+server.tool(
+  'get_folder',
+  { folder_id: z.string() },
+  async ({ folder_id }) => {
+    const result = await new GetFolder(apiClient).call(folder_id);
+    return {
+      content: [{ type: 'text', text: result }]
+    };
+  },
+  {
+    description: 'Get detailed information about a specific folder including contents summary and recent notes'
   }
 );
 
